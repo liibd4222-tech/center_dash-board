@@ -338,8 +338,7 @@ tr.store-row td.store-name-cell::before{
       </div>
     </div>
     <div class="panel" style="padding:14px 16px;">
-      <div class="table-scroll">
-        <table id="evalTable">
+      <div class="table-scroll" id="evalTableScroll">
           <thead>
             <tr>
               <th data-key="지사">지사</th>
@@ -1435,6 +1434,12 @@ function setEvalConsultant(btn, consultant){
   document.querySelectorAll('[data-evalconsultant]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   state.evalConsultant = consultant;
+  // 담당자 선택 시 전체 높이, 전체 선택 시 스크롤
+  const scroll = document.getElementById('evalTableScroll');
+  if(scroll){
+    scroll.style.maxHeight = consultant === 'ALL' ? '560px' : 'none';
+    scroll.style.overflow = consultant === 'ALL' ? 'auto' : 'visible';
+  }
   renderEvalTable();
 }
 document.querySelectorAll('#partsTable thead th').forEach(th=>{
