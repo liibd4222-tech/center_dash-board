@@ -711,6 +711,32 @@ tr.store-row td.store-name-cell::before{
           </div>
         </div>
       </div>
+      <!-- 섹션 4: 보일러 판매수량 -->
+      <div class="drill-section">
+        <div class="drill-section-header" onclick="toggleSection('drillBoiler')">
+          <span class="drill-section-icon">🔥</span>
+          <span>보일러 판매수량</span>
+          <span class="drill-section-toggle" id="drillBoilerToggle">▼</span>
+        </div>
+        <div class="drill-section-body" id="drillBoiler">
+          <div class="grid2">
+            <div class="panel">
+              <h3>월별 판매수량 추이</h3>
+              <div class="panel-sub">단위: 대</div>
+              <div class="chart-box" style="height:200px;"><canvas id="drillBoilerChart"></canvas></div>
+            </div>
+            <div class="panel" style="padding:14px 16px;">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;">모델별 판매수량 (1~7월 누적)</div>
+              <div class="table-scroll" style="max-height:200px;">
+                <table id="drillBoilerModelTable" style="font-size:12.5px;">
+                  <thead><tr><th>모델</th><th>수량</th><th>비율</th></tr></thead>
+                  <tbody id="drillBoilerModelTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1705,7 +1731,7 @@ function renderAll(){
   renderPartsTable();
   renderCallsTable();
   renderEvalTable();
-
+  if(document.getElementById('tab-boiler').classList.contains('active')) renderBoilerAll();
 }
 renderAll();
 
