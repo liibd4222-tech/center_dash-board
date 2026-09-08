@@ -498,11 +498,11 @@ tr.store-row td.store-name-cell::before{
               <th>순위</th>
               <th>지사</th>
               <th>대리점</th>
-              <th>총 판매수량</th>
-              <th>콘덴싱</th>
-              <th>일반형</th>
-              <th>온수기</th>
-              <th>콘덴싱 비율</th>
+              <th class="sortable-th" onclick="sortBoilerTable('total')">총 판매수량 <span id="bsort-total" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" onclick="sortBoilerTable('콘덴싱')">콘덴싱 <span id="bsort-콘덴싱" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" onclick="sortBoilerTable('일반형')">일반형 <span id="bsort-일반형" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" onclick="sortBoilerTable('온수기')">온수기 <span id="bsort-온수기" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" onclick="sortBoilerTable('condRate')">콘덴싱 비율 <span id="bsort-condRate" class="sort-icon">⇅</span></th>
             </tr>
           </thead>
           <tbody id="boilerStoreTbody"></tbody>
@@ -1719,6 +1719,24 @@ function renderBoilerModelChart(){
       scales:{x:{grid:{color:'#eef1f6'}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
 }
 
+let _boilerSortCol = 'total';
+let _boilerSortDir = -1; // -1=내림차순, 1=오름차순
+
+function sortBoilerTable(col){
+  if(_boilerSortCol === col){
+    _boilerSortDir *= -1;
+  } else {
+    _boilerSortCol = col;
+    _boilerSortDir = -1;
+  }
+  document.querySelectorAll('[id^="bsort-"]').forEach(el=>{
+    el.className='sort-icon'; el.textContent='⇅';
+  });
+  const icon = document.getElementById('bsort-'+col);
+  if(icon){ icon.className='sort-icon '+(_boilerSortDir===-1?'desc':'asc'); icon.textContent=_boilerSortDir===-1?'▼':'▲'; }
+  renderBoilerStoreTable();
+}
+
 function renderBoilerStoreTable(){
   const months = getBoilerMonths();
   const branch = state.branch;
@@ -1730,7 +1748,14 @@ function renderBoilerStoreTable(){
       storeAgg[k].total+=r.qty; storeAgg[k][r.type]=(storeAgg[k][r.type]||0)+r.qty;
     }
   });
-  const rows = Object.values(storeAgg).sort((a,b)=>b.total-a.total);
+  let rows = Object.values(storeAgg);
+  rows.sort((a,b)=>{
+    let av = _boilerSortCol==='condRate' ? (a.total ? a['콘덴싱']/a.total : 0)
+           : (a[_boilerSortCol]||0);
+    let bv = _boilerSortCol==='condRate' ? (b.total ? b['콘덴싱']/b.total : 0)
+           : (b[_boilerSortCol]||0);
+    return (bv-av)*_boilerSortDir;
+  });
   document.getElementById('boilerStoreTbody').innerHTML = rows.map((r,i)=>{
     const condRate = r.total ? (r['콘덴싱']/r.total*100).toFixed(1)+'%' : '-';
     return `<tr>
