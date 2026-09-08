@@ -233,6 +233,16 @@ tr.store-row td.store-name-cell::before{
 .search-input{border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:12.5px;width:160px;font-family:inherit;}
 .search-input:focus{outline:none;border-color:var(--steel);}
 
+
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.sortable-th:hover { background: #2a4a6b; }
+.sort-icon { font-size: 11px; opacity: 0.5; margin-left: 3px; }
+.sort-icon.asc  { opacity: 1; }
+.sort-icon.desc { opacity: 1; }
 </style>
 </head>
 <body>
@@ -407,13 +417,13 @@ tr.store-row td.store-name-cell::before{
             <tr>
               <th>지사</th>
               <th>대리점</th>
-              <th>총 집계건수</th>
-              <th>유상</th>
-              <th>유상 수리비용</th>
-              <th>무상</th>
-              <th>미방문(미입력)</th>
-              <th>미처리(접수중)</th>
-              <th>조치완료율</th>
+              <th class="sortable-th" data-col="total" onclick="sortCallsTable('total')">총 집계건수 <span id="sort-total" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" data-col="paid" onclick="sortCallsTable('paid')">유상 <span id="sort-paid" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" data-col="paidS" onclick="sortCallsTable('paidS')">유상 수리비용 <span id="sort-paidS" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" data-col="free" onclick="sortCallsTable('free')">무상 <span id="sort-free" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" data-col="noVisit" onclick="sortCallsTable('noVisit')">미방문(미입력) <span id="sort-noVisit" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" data-col="unpro" onclick="sortCallsTable('unpro')">미처리(접수중) <span id="sort-unpro" class="sort-icon">⇅</span></th>
+              <th class="sortable-th" data-col="doneRate" onclick="sortCallsTable('doneRate')">조치완료율 <span id="sort-doneRate" class="sort-icon">⇅</span></th>
             </tr>
           </thead>
           <tbody id="callsTbody"></tbody>
@@ -1343,6 +1353,29 @@ function renderEvalTable(){
   }).join('');
 }
 
+
+// ── 처리건수 테이블 정렬 ──────────────────────────────────────
+let _callsSortCol = null;
+let _callsSortDir = 1; // 1=내림차순, -1=오름차순
+
+function sortCallsTable(col){
+  if(_callsSortCol === col){
+    _callsSortDir *= -1;
+  } else {
+    _callsSortCol = col;
+    _callsSortDir = -1; // 첫 클릭: 내림차순
+  }
+  // 아이콘 업데이트
+  document.querySelectorAll('.sort-icon').forEach(el=>{
+    el.className='sort-icon'; el.textContent='⇅';
+  });
+  const icon = document.getElementById('sort-'+col);
+  if(icon){
+    icon.className = 'sort-icon ' + (_callsSortDir===-1?'desc':'asc');
+    icon.textContent = _callsSortDir===-1 ? '▼' : '▲';
+  }
+  renderCallsTable();
+}
 function renderCallsTable(){
   const isYTD = state.month==='YTD';
   const monthsToUse = isYTD ? MONTHS : [state.month];
@@ -1378,11 +1411,26 @@ function renderCallsTable(){
       html += `<tr><td class="name-cell">${b}</td><td style="color:var(--sub);font-size:11.5px;">전체 합계</td>${cells(bd)}</tr>`;
     } else {
       html += `<tr class="branch-total-row"><td class="branch-label">${b}</td><td>지사 합계</td>${cells(bd)}</tr>`;
-      const stores = STORES.filter(s=>s.지사===b).sort((a,c)=>a.대리점.localeCompare(c.대리점,'ko'));
-      for(const s of stores){
+      const stores = STORES.filter(s=>s.지사===b);
+      // 각 대리점 데이터 계산
+      let storeRows = stores.map(s=>{
         const sd = calc(MERGED_RAW.filter(r=>r['지사']===b && r['대리점']===s.대리점 && monthsToUse.includes(r.month)));
-        if(sd.total===0) continue;
-        html += `<tr class="store-row"><td></td><td class="store-name-cell">${s.대리점}</td>${cells(sd)}</tr>`;
+        return {name: s.대리점, d: sd};
+      }).filter(x=>x.d.total>0);
+      // 정렬 적용
+      if(_callsSortCol){
+        storeRows.sort((a,b)=>{
+          let av = a.d[_callsSortCol] !== undefined ? a.d[_callsSortCol]
+                 : (_callsSortCol==='doneRate' ? (a.d.total ? a.d.done/a.d.total : 0) : 0);
+          let bv = b.d[_callsSortCol] !== undefined ? b.d[_callsSortCol]
+                 : (_callsSortCol==='doneRate' ? (b.d.total ? b.d.done/b.d.total : 0) : 0);
+          return (bv-av)*_callsSortDir;
+        });
+      } else {
+        storeRows.sort((a,c)=>a.name.localeCompare(c.name,'ko'));
+      }
+      for(const {name, d} of storeRows){
+        html += `<tr class="store-row"><td></td><td class="store-name-cell">${name}</td>${cells(d)}</tr>`;
       }
     }
   }
