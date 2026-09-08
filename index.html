@@ -2016,7 +2016,7 @@ function renderDrillPartsDetail(branch, store, mode){
   // 월별로 묶은 뒤, 동일 품번은 합산
   const byMonth={};
   dataArr.forEach(r=>{
-    const m=parseInt((r.dt||'00').slice(5));
+    const m = typeof r.month === 'number' ? r.month : parseInt((r.dt||'00').slice(5));
     if(!byMonth[m]) byMonth[m]={};
     const key = r.pno + '||' + r.pnm;  // 품번+품명 조합으로 고유 키 (품번 달라도 품명 같으면 분리)
     if(!byMonth[m][key]){
