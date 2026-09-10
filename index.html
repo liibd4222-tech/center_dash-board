@@ -1922,7 +1922,7 @@ function renderDrillEvalSection(branch, store){
   const evRecs = EVAL_RAW.filter(r=>r['지사']===branch && r['대리점']===store);
   const labels = MONTHS.map(m=>MONTH_LABEL[m]);
   const color = BRANCH_COLOR[branch];
-  const scores = MONTHS.map(m=>{ const r=evRecs.find(x=>x.month===m); return r?+r['총점수'].toFixed(1):null; });
+  const scores = MONTHS.map(m=>{ const r=evRecs.find(x=>x.month===m); return r&&r['총점수']!=null?+r['총점수'].toFixed(1):null; });
 
   drillCharts['score'] = new Chart(document.getElementById('drillScoreChart'),{
     type:'line', data:{labels, datasets:[{label:'점수', data:scores, borderColor:color, backgroundColor:color+'22', tension:0.3, pointRadius:5, borderWidth:2.5}]},
@@ -1960,7 +1960,7 @@ function renderDrillEvalSection(branch, store){
     if(!r) return `<tr><td>${MONTH_LABEL[m]}</td><td colspan="11" style="color:var(--sub)">데이터 없음</td></tr>`;
     const g=gradeOf(r['총점수']);
     const vr=r['총접수건']?(r['방문']/r['총접수건']*100).toFixed(1)+'%':'-';
-    return `<tr><td>${MONTH_LABEL[m]}</td><td class="score-cell">${r['총점수'].toFixed(1)}</td>
+    return `<tr><td>${MONTH_LABEL[m]}</td><td class="score-cell">${r['총점수']!=null?r['총점수'].toFixed(1):'-'}</td>
       <td><span class="badge" style="background:${GRADE_COLOR[g]}">${g}</span></td>
       <td>${r['총접수건']}</td><td>${r['방문']}</td><td>${vr}</td>
       <td>${r['조치정보입력율'].toFixed(1)}</td><td>${r['약속시간입력율'].toFixed(1)}</td>
@@ -2015,9 +2015,9 @@ function renderDrillCallsSection(branch, store){
     if(!r) return `<tr><td>${MONTH_LABEL[m]}</td><td colspan="7" style="color:var(--sub)">데이터 없음</td></tr>`;
     return `<tr><td>${MONTH_LABEL[m]}</td>
       <td>${(r['svc_총건수']||0).toLocaleString()}건</td>
-      <td>${r['svc_유상'].toLocaleString()}건</td>
-      <td>${Math.round(r['svc_유상매출']).toLocaleString()}원</td>
-      <td>${r['svc_무상'].toLocaleString()}건</td>
+      <td>${(r['svc_유상']||0).toLocaleString()}건</td>
+      <td>${Math.round(r['svc_유상매출']||0).toLocaleString()}원</td>
+      <td>${(r['svc_무상']||0).toLocaleString()}건</td>
       <td>${(r['svc_미방문']||0).toLocaleString()}건</td>
       <td>${(r['svc_미처리']||0).toLocaleString()}건</td>
       <td>${r['svc_총건수']?(r['svc_조치완료']/r['svc_총건수']*100).toFixed(1)+'%':'-'}</td></tr>`;
