@@ -535,6 +535,7 @@ tr.store-row td.store-name-cell::before{
                 <th data-key="미방문율" style="width:70px;">미방문율</th>
                 <th data-key="매출금액" style="width:100px;">부품매출</th>
                 <th data-key="반품금액" style="width:100px;">부품반품</th>
+                <th data-key="보일러판매" style="width:80px;">보일러판매</th>
               </tr>
             </thead>
             <tbody id="storeTbody"></tbody>
@@ -1520,7 +1521,9 @@ function buildStoreSummaryRows(branchFilter){
       미방문_YTD: evRecs.reduce((a,r)=>a+(r['총접수건']-(r['방문']||0)),0),
       trend: trend,
       매출_월: latestMg?latestMg['매출금액']:0, 반품_월: latestMg?latestMg['반품금액']:0,
-      매출_YTD: ytdSales, 반품_YTD: ytdReturns
+      매출_YTD: ytdSales, 반품_YTD: ytdReturns,
+      boiler_YTD: [0,...MONTHS].reduce((acc,m)=>acc+((SALES_DATA.by_store_month[s.지사+'||'+s.대리점]||{})[String(m)]?.total||0),0),
+      boilerByMonth: SALES_DATA.by_store_month[s.지사+'||'+s.대리점]||{}
     };
   });
 }
@@ -1540,7 +1543,8 @@ function renderStoreTable(){
     방문건: isYTD ? r.방문_YTD : r.방문_월,
     미방문건: isYTD ? r.미방문_YTD : r.미방문_월,
     매출금액: isYTD ? r.매출_YTD : r.매출_월,
-    반품금액: isYTD ? r.반품_YTD : r.반품_월
+    반품금액: isYTD ? r.반품_YTD : r.반품_월,
+    보일러판매: isYTD ? r.boiler_YTD : ((r.boilerByMonth[state.month]?.total)||0)
   }));
 
   rows.sort((a,b)=>{
@@ -1573,6 +1577,7 @@ function renderStoreTable(){
       <td>${noVisitRate}</td>
       <td>${Math.round(r.매출금액||0).toLocaleString()}원</td>
       <td>${Math.round(r.반품금액||0).toLocaleString()}원</td>
+      <td>${r.보일러판매 ? r.보일러판매.toLocaleString()+'대' : '-'}</td>
     </tr>`;
   }).join('');
 }
