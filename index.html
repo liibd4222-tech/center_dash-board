@@ -1950,7 +1950,7 @@ function renderDrillEvalSection(branch, store){
         scales:{r:{suggestedMin:0,suggestedMax:100,ticks:{display:false},grid:{color:'#eef1f6'}}}}});
   }
 
-  const satis = MONTHS.map(m=>{ const r=evRecs.find(x=>x.month===m); return r?+r['만족도'].toFixed(2):null; });
+  const satis = MONTHS.map(m=>{ const r=evRecs.find(x=>x.month===m); return (r&&r['만족도']!=null)?+r['만족도'].toFixed(2):null; });
   const visitRate = MONTHS.map(m=>{ const r=evRecs.find(x=>x.month===m); return (r&&r['총접수건'])?(r['방문']/r['총접수건']*100).toFixed(1):null; });
   drillCharts['satis'] = new Chart(document.getElementById('drillSatisChart'),{
     type:'line', data:{labels, datasets:[
@@ -1969,9 +1969,9 @@ function renderDrillEvalSection(branch, store){
     return `<tr><td>${MONTH_LABEL[m]}</td><td class="score-cell">${r['총점수']!=null?r['총점수'].toFixed(1):'-'}</td>
       <td><span class="badge" style="background:${GRADE_COLOR[g]}">${g}</span></td>
       <td>${r['총접수건']}</td><td>${r['방문']}</td><td>${vr}</td>
-      <td>${r['조치정보입력율'].toFixed(1)}</td><td>${r['약속시간입력율'].toFixed(1)}</td>
-      <td>${r['재방문율'].toFixed(1)}</td><td>${r['불만율'].toFixed(1)}</td>
-      <td>${r['독촉율'].toFixed(1)}</td><td>${r['만족도'].toFixed(2)}</td></tr>`;
+      <td>${r['조치정보입력율']!=null?r['조치정보입력율'].toFixed(1):'-'}</td><td>${r['약속시간입력율']!=null?r['약속시간입력율'].toFixed(1):'-'}</td>
+      <td>${r['재방문율']!=null?r['재방문율'].toFixed(1):'-'}</td><td>${r['불만율']!=null?r['불만율'].toFixed(1):'-'}</td>
+      <td>${r['독촉율']!=null?r['독촉율'].toFixed(1):'-'}</td><td>${r['만족도']!=null?r['만족도'].toFixed(2):'-'}</td></tr>`;
   }).join('');
 }
 
